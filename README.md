@@ -1,0 +1,2 @@
+# SoftSysCnythesizer
+Synthesizer in C
