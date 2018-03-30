@@ -40,6 +40,6 @@ The link is here: http://thinkdsp.blogspot.com/2014/02/build-softsyssynth.html
 
 Our first tasks include:
 1. Gain a basic theoretical background of audio programming by reading the 'Basics of Audio Programming' chapter of the Audio Programming in C book. We will all work on this task concurrently. 
-2. Get started on implementing the hardware of the [SoftSysSynthesizer](http://thinkdsp.blogspot.com/2014/02/build-softsyssynth.html). We will start by sourcing and gathering materials. We will work on this together - the finishing 
-3. Get started on implementing the software of the [SoftSysSynthesizer](http://thinkdsp.blogspot.com/2014/02/build-softsyssynth.html). Fin
+2. Get started on implementing the hardware of the [SoftSysSynthesizer](http://thinkdsp.blogspot.com/2014/02/build-softsyssynth.html). We will start by sourcing and gathering materials. We will work on this together - the 'done' criteria will be an implementation of the synthesizer as described in the project documentation. 
+3. Get started on implementing the software of the [SoftSysSynthesizer](http://thinkdsp.blogspot.com/2014/02/build-softsyssynth.html). We will all work on this. The 'done' criteria will be a basic implementation that makes sound. 
 
