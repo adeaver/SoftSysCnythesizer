@@ -124,33 +124,39 @@ void writeByte(int x) {
 }
 
 int counter = 0;
-int BASE_WAVELENGTH = 238;
-int sampleDelay = 31;
+unsigned long BASE_WAVELENGTH = 238;
 int pitchShift = 0;
-int SHIFT_FACTOR = 15;
+unsigned long SHIFT_FACTOR = 15;
 int waveType = 1;
+unsigned long lastButton = 0;
+unsigned long pitchDelay = 31, BUTTON_DEBOUNCE = 500;
+int button2State = LOW;
+
 
 void loop() {
   int button1 = digitalRead(buttonPin1);
   int button2 = digitalRead(buttonPin3);
-  
-  if (!button2) waveType++;
-  if (waveType >= maxWaveform) waveType = 0;
 
-  //Serial.println(button2);*/
+  if (micros() - lastButton >= BUTTON_DEBOUNCE) {
+    lastButton = micros();
+    if (button2 != button2State) {
+      button2State = button2;
+
+      if(button2State == HIGH) {
+        waveType++;
+        if (waveType >= maxWaveform) waveType = 0;
+      }
+    }
+  }
   
   pitchShift = analogRead(pot);
   if (button1) return;
-  
-  counter ++;
-  if (counter > maxSamplesNum) {
-    counter = 0;
-    //Serial.println(counter);
-  }
 
-  // write to the digital pins  
+  // write to the digital pins 
+  pitchDelay = (SHIFT_FACTOR * pitchShift + BASE_WAVELENGTH)/maxSamplesNum;
+  
+  counter++;
+  if (counter > maxSamplesNum) counter = 0;
   writeByte(waveformsTable[waveType][counter]);
-  sampleDelay = (SHIFT_FACTOR * pitchShift + BASE_WAVELENGTH)/maxSamplesNum;
-  //Serial.println(sampleDelay);
-  delayMicroseconds(sampleDelay);
+  delayMicroseconds(pitchDelay);
 }
