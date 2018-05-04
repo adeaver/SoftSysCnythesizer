@@ -123,19 +123,21 @@ void writeByte(int x) {
   }
 }
 
-int counter = 0;
+int counter = 0, delayCounter = 0, delayValue = 0;
 unsigned long BASE_WAVELENGTH = 238;
-int pitchShift = 0;
+int pitchShift = 0, BASE_DELAY_SHIFT = 50;
+float delayGain = 3.0;
 unsigned long SHIFT_FACTOR = 15;
 int waveType = 1;
-unsigned long lastButton = 0;
-unsigned long pitchDelay = 31, BUTTON_DEBOUNCE = 500;
-int button2State = LOW;
+unsigned long lastButton = 0, lastDelay = 0;
+unsigned long pitchDelay = 31, BUTTON_DEBOUNCE = 500, DELAY_DEBOUNCE = 500;
+int button2State = LOW, button3State = LOW;
 
 
 void loop() {
   int button1 = digitalRead(buttonPin1);
   int button2 = digitalRead(buttonPin3);
+  int button3 = digitalRead(buttonPin2);
 
   if (micros() - lastButton >= BUTTON_DEBOUNCE) {
     lastButton = micros();
@@ -148,6 +150,25 @@ void loop() {
       }
     }
   }
+
+  if(micros() - lastDelay >= DELAY_DEBOUNCE) {
+    lastDelay = micros();
+    if(!(button3) != button3State) {
+      button3State = !(button3);
+      if(button3State) {
+        delayCounter = counter + BASE_DELAY_SHIFT;
+        delayGain = 3;
+      } else {
+        delayValue = 0;
+      }
+    }
+
+    if(button3State) {
+      delayCounter++;
+      delayGain += .1;
+      delayValue = waveformsTable[waveType][delayCounter];
+    }
+  }
   
   pitchShift = analogRead(pot);
   if (button1) return;
@@ -157,6 +178,6 @@ void loop() {
   
   counter++;
   if (counter > maxSamplesNum) counter = 0;
-  writeByte(waveformsTable[waveType][counter]);
+  writeByte(waveformsTable[waveType][counter] + delayValue/delayGain);
   delayMicroseconds(pitchDelay);
 }
