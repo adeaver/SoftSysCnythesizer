@@ -49,16 +49,22 @@ short scales[NUMSCALES][SCALENOTES] = {
 };
 
 const long DEBOUNCE_TIME = 50;
+const long DEBOUNCE_TIME2 = 10;
 long waveButtonLastPressed = 0;
 long scaleButtonLastPressed = 0;
+long randButtonLastPressed = 0;
+long lastRand = 0;
 int pot = A0;
 int waveButton = A1;
 int scaleButton = A2;
+int randButton = A3;
 int playButton = A4;
 
 long currFreq = 3000;
 
+int randState = 0;
 int pitchShift = 0;
+int pitchShift2 = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -89,6 +95,7 @@ void setup() {
   ADCSRA = (ADCSRA & 0xf8) | 0x04; // magic "Where did you find this" - Andrew "*laughs* In a forum" - Patrick
   pinMode(waveButton, INPUT_PULLUP);
   pinMode(scaleButton, INPUT_PULLUP);
+  pinMode(randButton, INPUT_PULLUP);
   pinMode(playButton, INPUT_PULLUP);
   pinMode(pot, INPUT);
 }
@@ -228,6 +235,14 @@ void checkWaveChangeButton() {
         scaleButtonLastPressed = timePressed;
      }
    }
+   
+   if(!digitalRead(randButton)) {
+     long timePressed = millis();
+     if(timePressed - randButtonLastPressed > DEBOUNCE_TIME) {
+        randState = !randState;
+        randButtonLastPressed = timePressed;
+     }
+   }
 }
 
 //Timer one checks button presses
@@ -249,7 +264,24 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt writes bytes onto D6 to D13
 
 //100 Hz timer two interrupt changes frequencies
 ISR(TIMER2_COMPA_vect) {
-  if (scales[scaleType][pitchShift] != currFreq) {
+  if (randState) {
+//    pitchShift += 2 - random(0, 4);
+//    if (pitchShift < 0) {
+//      pitchShift = 0;
+//    } else if (pitchShift > SCALENOTES) {
+//      pitchShift = 32;
+//    }
+//    currFreq = scales[scaleType][pitchShift];
+    long now = millis();
+    if (now - lastRand > DEBOUNCE_TIME2) {
+      pitchShift2 = random(0, SCALENOTES);
+//      currFreq = random(131, 1865);
+      lastRand = now;
+    }
+    currFreq = scales[scaleType][pitchShift2];
+    setTimerOneInterrupt(waveFreqToCompareReg(currFreq));
+  }
+  else if (scales[scaleType][pitchShift] != currFreq) {
     currFreq = scales[scaleType][pitchShift];
     setTimerOneInterrupt(waveFreqToCompareReg(currFreq));
   }

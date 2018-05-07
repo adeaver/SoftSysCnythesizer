@@ -13,10 +13,10 @@
  */
 
 #define MAX_WAVETYPE 1
-#define MAX_WAVEFORM 256
+#define MAX_WAVEFORM 128
 const double PI2 = 6.283185;
 
-float sinWave[1][256];
+float sinWave[1][MAX_WAVEFORM];
 
 byte reverse(byte inb) {
   //reverse function taken from http://stackoverflow.com/questions/2602823/in-c-c-whats-the-simplest-way-to-reverse-the-order-of-bits-in-a-byte
@@ -36,9 +36,9 @@ void createSinLookup(){
 }
  
 int ledPin = 5;       // select the pin for the LED
-int buttonPin1 = 2;
-int buttonPin2 = 3;
-int buttonPin3 = 4;
+int buttonPin1 = A4;
+int buttonPin2 = A2;
+int buttonPin3 = A3;
 int pot = A0;
 
 void setup() {
@@ -46,8 +46,8 @@ void setup() {
 
   pinMode(pot, INPUT);
   
-  pinMode(buttonPin1, INPUT_PULLUP);  
-  pinMode(buttonPin2, INPUT_PULLUP); 
+  pinMode(buttonPin1, INPUT);  
+  pinMode(buttonPin2, INPUT); 
 
   pinMode(buttonPin3, INPUT_PULLUP);
 
@@ -73,9 +73,8 @@ void writeByte(byte val){
 }
 
 int counter = 0, delayCounter = 0, delayValue = 0;
-unsigned long BASE_WAVELENGTH = 1000000;
+unsigned long BASE_WAVELENGTH = 5;
 int pitchShift = 0, BASE_DELAY_SHIFT = 50;
-float delayGain = 3.0;
 unsigned long SHIFT_FACTOR = 15;
 int waveType = 1;
 unsigned long lastButton = 0, lastDelay = 0, lastOutput = 0;
@@ -107,7 +106,6 @@ void loop() {
       button3State = !(button3);
       if(button3State) {
         delayCounter = counter + BASE_DELAY_SHIFT;
-        delayGain = 3;
       } else {
         delayValue = 0;
       }
@@ -115,7 +113,6 @@ void loop() {
 
     if(button3State) {
       delayCounter++;
-      delayGain += .1;
       delayValue = sinWave[waveType][delayCounter];
     }
   }
