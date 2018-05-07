@@ -48,7 +48,7 @@ We additionally spent some time building out the hardware of the synthesizer, so
 
 At this point, we were able to generate a wider range of tones, but inspecting the waveforms using an Analog Discovery oscilloscope made it clear that our waves were nowhere near the ideal waves we were trying to create (sine, sawtooth, square). The reason for this was because the `delayMicroseconds()` function represented the minimum amount of time between each of the samples. So any computation that needed to be done added to the delay, and therefore created a different frequency than we thought we were creating.  Additionally, the highest frequency we could not play higher frequencies because of the computational time that the arduino needed in order to process all of the instructions.
 
-[Bad Waves](./images/micros.png)
+![Bad Waves](./images/micros.png)
 
 This observation, combined with the advice of our professor to "look into timer interrupts" prompted us to look into [timer interrupts](https://learn.adafruit.com/multi-tasking-the-arduino-part-2/timers). In the script `/modified_dsp_interrupt_code/modified_dsp_interrupt_code.ino` is our final implementation of the synthesizer using timer interrupts. The basic idea of timer interrupts is that instead of outputting the signal in the `loop()` function, an additional structure is created that "wakes up" to a specified clock rate, and performs a unit of work. 
 
@@ -102,8 +102,8 @@ At this point, we had a refined program that did very little computational work 
 
 Finally, we had a clean waveform that could play high frequencies effectively!
 
-[Good Waves](./images/sin.png)
-[Nice Sawtooth](./images/saw.png)
+![Good Waves](./images/sin.png)
+![Nice Sawtooth](./images/saw.png)
 
 Additionally, we implemented different scales using a lookup table for known note frequencies (as opposed to calculating them as we did in our first implementation).
 
