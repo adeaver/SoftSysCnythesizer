@@ -1,3 +1,6 @@
+#define NUMSCALES 2
+#define SCALENOTES 32
+
 const double PI2 = 6.283185;
 const byte AMP = 127;
 const byte OFFSET = 128;
@@ -21,15 +24,37 @@ byte sawWave[LENGTH];
 byte pauseWave[LENGTH];
 byte *wave[4];
 byte waveType;
+byte scaleType;
 
 //index of wave array we want to write next
 byte waveIndex = 0;
 
-short freqs[] = { 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 554, 587, 622, 659, 699, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175, 1245,  1319,  1397,  1480,  1568, 1661 };
+short scales[NUMSCALES][SCALENOTES] = {
+  // Chromatic Scale
+  { 262, 277, 294, 311, 330, 
+  349, 370, 392, 415, 440, 
+  466, 494, 554, 587, 622, 
+  659, 699, 740, 784, 831, 
+  880, 932, 988, 1047, 1109, 
+  1175, 1245,  1319,  1397,  1480,  
+  1568, 1661 },
+  // Blues Scale
+  { 131, 131, 147, 147, 165, 
+  185, 208, 233, 233, 262, 
+  294, 330, 370, 415, 415, 
+  466, 523, 587, 659, 740, 
+  740, 831, 932, 1047, 1175,
+  1175, 1319, 1319, 1480, 1661, 
+  1865, 1865 }
+};
 
 const long DEBOUNCE_TIME = 50;
 long waveButtonLastPressed = 0;
+long scaleButtonLastPressed = 0;
 int pot = A0;
+int waveButton = A1;
+int scaleButton = A2;
+int playButton = A4;
 
 long currFreq = 3000;
 
@@ -62,8 +87,9 @@ void setup() {
   //enable interrupts
   sei();
   ADCSRA = (ADCSRA & 0xf8) | 0x04; // magic "Where did you find this" - Andrew "*laughs* In a forum" - Patrick
-  pinMode(A1, INPUT_PULLUP);
-  pinMode(A4, INPUT_PULLUP);
+  pinMode(waveButton, INPUT_PULLUP);
+  pinMode(scaleButton, INPUT_PULLUP);
+  pinMode(playButton, INPUT_PULLUP);
   pinMode(pot, INPUT);
 }
 
@@ -185,13 +211,23 @@ void changeWaveType() {
 }
 
 void checkWaveChangeButton() {
-   if(!digitalRead(A1)){
+   if(!digitalRead(waveButton)){
       long timePressed = millis();
       if(timePressed - waveButtonLastPressed > DEBOUNCE_TIME){
         changeWaveType();
         waveButtonLastPressed = timePressed;
       }
-   } 
+   }
+   if(!digitalRead(scaleButton)) {
+     long timePressed = millis();
+     if(timePressed - scaleButtonLastPressed > DEBOUNCE_TIME) {
+        scaleType++;
+        if(scaleType >= NUMSCALES) {
+          scaleType = 0;
+        }
+        scaleButtonLastPressed = timePressed;
+     }
+   }
 }
 
 //Timer one checks button presses
@@ -213,8 +249,8 @@ ISR(TIMER1_COMPA_vect) { //timer1 interrupt writes bytes onto D6 to D13
 
 //100 Hz timer two interrupt changes frequencies
 ISR(TIMER2_COMPA_vect) {
-  if (freqs[pitchShift] != currFreq) {
-    currFreq = freqs[pitchShift];
+  if (scales[scaleType][pitchShift] != currFreq) {
+    currFreq = scales[scaleType][pitchShift];
     setTimerOneInterrupt(waveFreqToCompareReg(currFreq));
   }
 }
